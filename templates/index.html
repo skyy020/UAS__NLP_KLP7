@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chatbot Edukasi Menstruasi & Kesehatan Reproduksi</title>
+  <meta name="description"
+    content="Chatbot pintar berbasis IndoBERT dan SBERT untuk menjawab pertanyaan seputar menstruasi, siklus haid, dan kesehatan reproduksi wanita." />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Custom CSS -->
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand-section">
+        <div class="logo-wrapper">
+          <i class="fa-solid fa-heart-pulse logo-icon"></i>
+        </div>
+        <div class="brand-info">
+          <h1 class="brand-title">CEM AI</h1>
+          <p class="brand-subtitle">Asisten Virtual Kesehatan</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-menu">
+        <button class="nav-btn active" data-tab="chat-tab">
+          <i class="fa-regular fa-comments"></i> Chat Assistant
+        </button>
+        <button class="nav-btn" data-tab="explorer-tab" id="btn-explore-kb">
+          <i class="fa-solid fa-book-open"></i> Knowledge Base
+        </button>
+      </nav>
+
+      <!-- Configuration Section (Deactivated) -->
+      <!--
+            <div class="config-card">
+                <h3 class="card-title"><i class="fa-solid fa-sliders"></i> Pengaturan Model</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Pilih Model NLP</label>
+                    <div class="model-toggle-group">
+                        <label class="model-option">
+                            <input type="radio" name="nlp-model" value="indobert" checked>
+                            <span class="model-card">
+                                <span class="model-name">IndoBERT</span>
+                                <span class="model-desc">F1-Score ~82.2% (Tinggi)</span>
+                            </span>
+                        </label>
+                        <label class="model-option">
+                            <input type="radio" name="nlp-model" value="sbert">
+                            <span class="model-card">
+                                <span class="model-name">SBERT</span>
+                                <span class="model-desc">F1-Score ~76.7% (Cepat)</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            -->
+
+      <!-- Quick Tips Section -->
+      <div class="quick-tips-container">
+        <div class="quick-tip-card">
+          <div class="tip-icon"><i class="fa-regular fa-lightbulb"></i></div>
+          <div class="tip-text">
+            <strong>Tips Sehat:</strong> Minum air putih hangat dan hindari
+            kafein berlebih untuk meredakan nyeri menstruasi.
+          </div>
+        </div>
+      </div>
+
+      <!-- Theme Toggle & Footer -->
+      <div class="sidebar-footer">
+        <button class="theme-toggle-btn" id="theme-toggle">
+          <i class="fa-solid fa-sun icon-sun"></i>
+          <i class="fa-solid fa-moon icon-moon"></i>
+          <span class="theme-text">Mode Terang</span>
+        </button>
+        <div class="copyright">© 2026 CEM AI</div>
+      </div>
+    </aside>
+
+    <!-- Main Window -->
+    <main class="main-content">
+      <!-- HEADER -->
+      <header class="main-header">
+        <div class="header-left">
+          <h2 class="header-title" id="page-title">Chat Assistant</h2>
+          <p class="header-desc" id="page-desc">
+            Tanyakan keluhan atau informasi seputar menstruasi kepada AI
+          </p>
+        </div>
+        <div class="header-right">
+          <div class="active-badge">
+            <span class="pulse-dot"></span>
+            <span id="header-model-badge">Model IndoBERT</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB CONTAINER -->
+      <div class="tab-container">
+        <!-- TAB 1: CHAT ASSISTANT -->
+        <div class="tab-pane active" id="chat-tab">
+          <div class="chat-wrapper">
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chat-messages-container">
+              <!-- Welcome Message -->
+              <div class="message-group bot-message">
+                <div class="bot-avatar">
+                  <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="message-bubble-wrapper">
+                  <div class="message-bubble">
+                    <p>
+                      Halo! Saya <strong>CEM AI</strong>, asisten virtual
+                      kesehatan reproduksi Anda. Anda bisa menanyakan apapun
+                      seputar menstruasi, siklus haid, nyeri haid (dismenore),
+                      kehamilan, atau keluhan reproduksi lainnya.
+                    </p>
+                    <p>Silakan ketik pertanyaan Anda di bawah ini!</p>
+                  </div>
+                  <div class="message-meta">CEM AI • Baru saja</div>
+                </div>
+              </div>
+
+              <!-- Dummy starter questions -->
+              <div class="starter-questions">
+                <p class="starter-title">Mungkin Anda ingin menanyakan:</p>
+                <div class="starter-grid">
+                  <button class="starter-btn" data-question="Apa itu menstruasi?">
+                    <i class="fa-solid fa-circle-question"></i> Apa itu
+                    menstruasi?
+                  </button>
+                  <button class="starter-btn" data-question="Berapa lama siklus menstruasi normal?">
+                    <i class="fa-solid fa-circle-question"></i> Berapa lama
+                    siklus menstruasi?
+                  </button>
+                  <button class="starter-btn" data-question="Bagaimana cara meredakan nyeri haid?">
+                    <i class="fa-solid fa-circle-question"></i> Cara meredakan
+                    nyeri haid?
+                  </button>
+                  <button class="starter-btn" data-question="Kenapa haid saya bisa terlambat?">
+                    <i class="fa-solid fa-circle-question"></i> Kenapa haid
+                    bisa terlambat?
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator-container" id="typing-indicator" style="display: none">
+              <div class="bot-avatar">
+                <i class="fa-solid fa-robot"></i>
+              </div>
+              <div class="typing-bubble">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+
+            <!-- Chat Input Box -->
+            <div class="chat-input-area">
+              <form id="chat-form" class="chat-input-form">
+                <input type="text" id="chat-input" placeholder="Tulis pertanyaan Anda di sini..." autocomplete="off"
+                  required />
+                <button type="submit" class="send-btn" id="send-button" title="Kirim">
+                  <i class="fa-solid fa-paper-plane"></i>
+                </button>
+              </form>
+              <p class="input-disclaimer">
+                <i class="fa-solid fa-circle-info"></i> Informasi yang
+                diberikan merupakan sarana edukasi dan bukan pengganti saran
+                atau diagnosis medis profesional.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: KNOWLEDGE BASE EXPLORER -->
+        <div class="tab-pane" id="explorer-tab">
+          <div class="explorer-wrapper">
+            <!-- Search and Filter Header -->
+            <div class="explorer-search-bar">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="kb-search-input" placeholder="Cari pertanyaan atau kata kunci di database..." />
+                <button id="btn-clear-search" class="clear-btn" style="display: none">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+              <button id="btn-search-kb" class="primary-btn">
+                Cari Data
+              </button>
+            </div>
+
+            <div class="explorer-results-header">
+              <span class="results-count" id="kb-results-count">Menampilkan 0 data</span>
+              <span class="db-source-label">Database Model:
+                <strong id="kb-current-model-lbl">IndoBERT</strong></span>
+            </div>
+
+            <!-- Grid container for Q&As -->
+            <div class="kb-grid" id="kb-grid-container">
+              <!-- Cards will be populated here by JavaScript -->
+              <div class="loading-state">
+                <i class="fa-solid fa-spinner fa-spin loading-icon"></i>
+                <p>Memuat database pertanyaan...</p>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container" id="kb-pagination" style="display: none">
+              <button class="pag-btn" id="prev-page-btn" disabled>
+                <i class="fa-solid fa-chevron-left"></i> Sebelumnya
+              </button>
+              <span class="page-info" id="page-info-lbl">Halaman 1 dari 1</span>
+              <button class="pag-btn" id="next-page-btn">
+                Selanjutnya <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Custom Javascript -->
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
