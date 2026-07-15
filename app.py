@@ -186,8 +186,13 @@ def load_sbert():
         print(f"Error loading SBERT: {e}")
 
 # Load models at startup
-load_indobert()
+# Load models at startup (background thread, supaya server bisa langsung listen)
+import threading
+threading.Thread(target=load_indobert, daemon=True).start()
 
+@app.route('/health')
+def health():
+    return jsonify({'status': 'ok'}), 200
 # Routes
 @app.route('/')
 def home():
