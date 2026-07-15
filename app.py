@@ -1,6 +1,8 @@
 import os
 import re
 import pickle
+import threading
+import gc
 import pandas as pd
 import torch
 torch.set_num_threads(1)
@@ -73,8 +75,24 @@ def get_bert_embedding(texts, model, tokenizer):
     sentence_embedding = summed / counts
     return sentence_embedding
 
+indobert_lock = threading.Lock()
+
 # Load IndoBERT Model and Data
 def load_indobert():
+    # Cegah loading ganda secara bersamaan (penyebab lonjakan RAM/OOM)
+    if MODELS['indobert']['loaded']:
+        return
+    if not indobert_lock.acquire(blocking=False):
+        # Proses loading lain sedang berjalan, tunggu sampai selesai lalu keluar
+        indobert_lock.acquire()
+        indobert_lock.release()
+        return
+    try:
+        _load_indobert_impl()
+    finally:
+        indobert_lock.release()
+
+def _load_indobert_impl():
     print("=== Loading IndoBERT Model and Data ===")
     try:
         from transformers import AutoTokenizer, AutoModel
@@ -131,6 +149,7 @@ def load_indobert():
         MODELS['indobert']['tokenizer'] = tokenizer
         MODELS['indobert']['model'] = model
         MODELS['indobert']['loaded'] = True
+        gc.collect()
         print("IndoBERT loaded successfully!")
     except Exception as e:
         MODELS['indobert']['error'] = str(e)
@@ -186,9 +205,7 @@ def load_sbert():
         MODELS['sbert']['error'] = str(e)
         print(f"Error loading SBERT: {e}")
 
-# Load models at startup
 # Load models at startup (background thread, supaya server bisa langsung listen)
-import threading
 threading.Thread(target=load_indobert, daemon=True).start()
 
 @app.route('/health')
