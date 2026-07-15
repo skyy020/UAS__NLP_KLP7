@@ -14,4 +14,4 @@ COPY . .
 ENV PYTHONUNBUFFERED=1
 ENV HF_HOME=/app/.cache/huggingface
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--timeout", "300", "app:app"]
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 300 app:app
