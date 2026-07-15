@@ -2,20 +2,16 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install system dependencies (kalau perlu untuk torch/transformers)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements dulu untuk caching layer
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
-# Copy semua file project
 COPY . .
 
-# Set environment variable
 ENV PYTHONUNBUFFERED=1
+ENV HF_HOME=/app/.cache/huggingface
 
-# Jalankan aplikasi
-CMD ["python", "app.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--timeout", "300", "app:app"]

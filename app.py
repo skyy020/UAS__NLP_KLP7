@@ -3,6 +3,7 @@ import re
 import pickle
 import pandas as pd
 import torch
+torch.set_num_threads(1)
 import torch.nn.functional as F
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
